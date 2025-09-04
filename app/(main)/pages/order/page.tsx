@@ -579,6 +579,20 @@ const OrderPage = () => {
                     command: () => confirmChangeStatus(rowData, 1)
                 }
             ];
+        }else if(status===3){
+             items = [
+                {
+                    label: t('ORDER.STATUS.CONFIRMED'),
+                    icon: 'pi pi-check',
+                    command: () => confirmChangeStatus(rowData, 1)
+                },
+
+                {
+                    label: t('ORDER.STATUS.REJECTED'),
+                    icon: 'pi pi-times',
+                    command: () => confirmChangeStatus(rowData, 2)
+                }
+            ];
         }
 
         if (items.length > 0) {
