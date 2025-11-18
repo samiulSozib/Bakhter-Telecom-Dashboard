@@ -36,6 +36,9 @@ import { helpArticlesReducer } from './helpArilesReducer';
 import { resellerInformationReducer } from './resellerInformationReducer';
 import { paymentTypesReducer } from './paymentTypeReducer';
 import {appSettingsReducer} from './appSettingsReducer'
+import { providerReducer } from './providerReducer';
+import {singleProviderReducer} from './singleProviderReducer'
+import {hawalaNumberSeriesReducer} from './hawalaSeriesReducer'
 
 const rootReducer=combineReducers({
     currenciesReducer:currenciesReducer,
@@ -74,7 +77,10 @@ const rootReducer=combineReducers({
     helpArticlesReducer:helpArticlesReducer,
     resellerInformationReducer:resellerInformationReducer,
     paymentTypesReducer:paymentTypesReducer,
-    appSettingsReducer:appSettingsReducer
+    appSettingsReducer:appSettingsReducer,
+    providerReducer:providerReducer,
+    singleProviderReducer:singleProviderReducer,
+    hawalaNumberSeriesReducer:hawalaNumberSeriesReducer
 })
 
 

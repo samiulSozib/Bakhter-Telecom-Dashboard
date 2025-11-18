@@ -63,7 +63,23 @@ export interface Bundle {
     updated_at: string;
     service: Service | null;
     currency: Currency | null;
+    api_provider_id?:number|string|null,
+    api_provider_bundle_id?:number|string|null,
+    api_binding?:ApiBinding|null|string
+}
 
+export interface ApiBinding {
+  product_type: string;
+  operator: string;
+  internet_type: string;
+  sim_type: string;
+  product_id: number | string;
+  table_id: number | string;
+  name: string;
+  days: number|string;
+  volume: number | string;
+  unit: string;
+  periodicity: string;
 }
 
 export interface PaginationLink {
@@ -421,7 +437,8 @@ export interface Payment{
     reseller:Reseller|null,
     payment_method:PaymentMethod|null,
     currency:Currency|null,
-    performed_by_name?:string|null
+    performed_by_name?:string|null,
+    operation_type?:string|null
 }
 
 export interface Roles{
@@ -524,8 +541,9 @@ export interface Hawala {
   transaction_id?: string | number | null;
   bundle?: Bundle | null;
 
-  created_at?: Date | string;
-  updated_at?: Date | string;
+  created_at?: Date | string|null;
+  updated_at?: Date | string|null;
+  hawala_custom_number?:string|null
 }
 
 
@@ -706,4 +724,167 @@ export interface AppSettings {
     TELEGRAM_WEBHOOK_URL: string;
     TELEGRAM_BOT_TOKEN: string;
   };
+}
+
+
+
+export interface Provider {
+  id: number;
+  code: string;
+  name: string;
+  base_url: string;
+  is_active: boolean;
+  failover_priority: string | null;
+  timeout_seconds: string | null;
+  capabilities: string[];
+  endpoints: {
+    topup?: string | null;
+    status?: string | null;
+    balance?: string | null;
+    default?: string | null;
+    internet?: string | null;
+    products?: string | null;
+    [key: string]: string | null | undefined;
+  };
+  method_names: {
+    pin?: string | null;
+    bill?: string | null;
+    topup?: string | null;
+    credit?: string | null;
+    status?: string | null;
+    addfund?: string | null;
+    balance?: string | null;
+    internet?: string | null;
+    products?: string | null;
+    check_bill?: string | null;
+    buy_product?: string | null;
+    trans_status?: string | null;
+    available_pin?: string | null;
+    retrieve_product_info?: string | null;
+    [key: string]: string | null | undefined;
+  };
+  ip_whitelist: string[];
+  metadata: {
+    notes?: string | null;
+    headers?: {
+      [key: string]: string;
+    } | null;
+    credentials?: {
+      [key: string]: string;
+    } | null;
+    callback_url?: string | null;
+    test_mode_supported?: boolean | null;
+    products_require_params?: boolean | null;
+    [key: string]: any;
+  } | null;
+  created_at: string | null;
+  updated_at: string | null;
+  deleted_at: string | null;
+}
+
+
+export interface SingleProvider {
+  id: number;
+  code: string;
+  name: string;
+}
+
+export interface Meta {
+  table_id: string;
+  product_type: string;
+  operator: string;
+  name: string;
+  id: string;
+  gross_price: number;
+  amount: number;
+  periodicity: string;
+  days: string;
+  volume: string;
+  unit: string;
+  sim_type: string;
+  course: string;
+  course_range: string;
+  type: string;
+  amount_rial: number;
+  gross_price_rial: number;
+  internet_type: string;
+}
+
+export interface Internet {
+  provider_product_id: string;
+  provider_table_id: string;
+  category: string;
+  label: string;
+  operator: string;
+  internet_type: string;
+  sim_type: string;
+  days: number;
+  volume: string;
+  unit: string;
+  amount: number;
+  gross_price: number;
+  amount_rial: number;
+  gross_price_rial: number;
+  currency_hint: string;
+  type_label: string;
+  meta: Meta;
+}
+export interface RawInternet {
+  table_id: string;
+  product_type: string;
+  operator: string;
+  name: string;
+  id: string;
+  gross_price: number;
+  amount: number;
+  periodicity: string;
+  days: string;
+  volume: string;
+  unit: string;
+  sim_type: string;
+  course: string;
+  course_range: string;
+  type: string;
+  amount_rial: number;
+  gross_price_rial: number;
+  internet_type: string;
+}
+
+export interface SingleProviderResponse {
+  provider: SingleProvider;
+  internets: Internet[];
+  rawInternets:RawInternet[]
+}
+
+
+export interface PriceAdjustmentPayload {
+    adjustment_type: 'percentage' | 'fixed';
+    adjustment_value: number;
+    base_price?: 'admin_buying_price' | 'buying_price';
+    service_ids?: number[];
+    confirmation?: boolean;
+}
+
+export interface PriceAdjustmentPreview {
+    bundle_id: number;
+    bundle_title: string;
+    current_admin_buying_price: string;
+    current_buying_price: string;
+    current_selling_price: string;
+    new_buying_price: string;
+    new_selling_price: string;
+    price_change: string;
+    service_name: string;
+    company_name: string;
+}
+
+
+export interface HawalaNumberSeries {
+  id: number;
+  branch_id: number;
+  branch?:HawalaBranch|null;
+  prefix: string;
+  current_number: number;
+  reset_daily: boolean;
+  is_active: boolean;
 }

@@ -54,7 +54,8 @@ const PaymentPage = () => {
         updated_date: '',
         reseller: null,
         payment_method: null,
-        currency: null
+        currency: null,
+        operation_type:'credit'
     };
 
     const [paymentDialog, setPaymentDialog] = useState(false);
@@ -284,10 +285,11 @@ const PaymentPage = () => {
         return (
             <React.Fragment>
                 <div className="flex justify-end items-center gap-2">
+                    <Button label={t('ADD_PAYMENT')} icon="pi pi-plus" severity="success" className={['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'ml-2' : 'mr-2'} onClick={openNew} />
                     {' '}
                     {/* Added gap-2 here */}
                     <div className="flex-1 min-w-[100px]" ref={filterRef} style={{ position: 'relative' }}>
-                        <Button className="p-button-info" label={t('FILTER')} icon="pi pi-filter" onClick={() => setFilterDialogVisible(!filterDialogVisible)} />
+                        <Button className="p-button-info" label={t('FILTER')} style={{ gap: '8px' }} icon="pi pi-filter" onClick={() => setFilterDialogVisible(!filterDialogVisible)} />
                         {filterDialogVisible && (
                             <div
                                 className="p-card p-fluid"
@@ -385,8 +387,8 @@ const PaymentPage = () => {
                             </div>
                         )}
                     </div>
-                    <Button label="Add Payment" icon="pi pi-plus" severity="success" onClick={openNew} />
-                    <Button className="flex-1 min-w-[100px]" label={t('EXPORT.EXPORT')} icon={`pi pi-file-excel`} severity="success" onClick={exportToExcel} />
+
+                    <Button className="flex-1 min-w-[100px]" label={t('EXPORT.EXPORT')} style={{ gap: '8px' }} icon={`pi pi-file-excel`} severity="success" onClick={exportToExcel} />
                 </div>
             </React.Fragment>
         );
@@ -487,6 +489,32 @@ const PaymentPage = () => {
         );
     };
 
+const operationTypeBodyTemplate = (rowData: Payment) => {
+    const getOperationLabel = (type?: string | null): string => {
+        switch (type) {
+            case "credit":
+                return "Credit";
+            case "debit":
+                return "Debit";
+            case "credit_full":
+                return "Credit Full";
+            case "debit_full":
+                return "Debit Full";
+            default:
+                return type ?? "—";
+        }
+    };
+
+    return (
+        <>
+            <span className="p-column-title">Operation Type</span>
+            {getOperationLabel(rowData?.operation_type)}
+        </>
+    );
+};
+
+
+
     const performedByBodyTemplate = (rowData: Payment) => {
         return (
             <>
@@ -543,15 +571,15 @@ const PaymentPage = () => {
         const isCompleted = rowData.status === 'completed';
         const isPending = rowData.status === 'pending';
 
-        const items = [];
+        const items:any = [];
 
         // Always include Delete
-        items.push({
-            label: t('Delete'),
-            icon: 'pi pi-trash',
-            command: () => confirmDeletePayment(rowData),
-            disabled: isRollbacked // Disabled only if rollbacked
-        });
+        // items.push({
+        //     label: t('DELETE'),
+        //     icon: 'pi pi-trash',
+        //     command: () => confirmDeletePayment(rowData),
+        //     disabled: isRollbacked // Disabled only if rollbacked
+        // });
 
         if (isRollbacked) {
             // All other actions are disabled (only Delete is shown but disabled above)
@@ -560,7 +588,7 @@ const PaymentPage = () => {
 
         if (isCompleted) {
             items.push({
-                label: t('Rollback'),
+                label: t('ROLLBACK'),
                 icon: 'pi pi-replay',
                 command: () => confirmRollbackPayment(rowData)
             });
@@ -583,12 +611,12 @@ const PaymentPage = () => {
                     command: () => confirmVerifyAndSendPayment(rowData)
                 },
                 {
-                    label: t('Rollback'),
+                    label: t('ROLLBACK'),
                     icon: 'pi pi-replay',
                     command: () => confirmRollbackPayment(rowData)
                 },
                 {
-                    label: t('Edit'),
+                    label: t('EDIT'),
                     icon: 'pi pi-pencil',
                     command: () => editPayment(rowData)
                 }
@@ -712,6 +740,7 @@ const PaymentPage = () => {
                         <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.TABLE.COLUMN.PAYMENTMETHOD')} body={paymentMethodBodyTemplate}></Column>
                         <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.TABLE.COLUMN.AMOUNT')} body={amountBodyTemplate}></Column>
                         <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.TABLE.COLUMN.CURRENCY')} body={currencyBodyTemplate}></Column>
+                        <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.FORM.INPUT.OPRATIONTYPE')} body={operationTypeBodyTemplate}></Column>
                         <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.TABLE.COLUMN.REMAININGPAYMENTAMOUNT')} body={remainingPaymentBodyTemplate}></Column>
                         <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.TABLE.COLUMN.STATUS')} body={statusBodyTemplate}></Column>
                         <Column style={{ ...customCellStyle, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} header={t('PAYMENT.TABLE.COLUMN.NOTES')} body={noteBodyTemplate}></Column>
@@ -793,6 +822,37 @@ const PaymentPage = () => {
                                         </small>
                                     )}
                                 </div>
+
+                                {/* operation type type */}
+                                <div className="field">
+                                    <label htmlFor="operation_type" style={{ fontWeight: 'bold' }}>{t('PAYMENT.FORM.INPUT.OPRATIONTYPE')} *</label>
+                                    <Dropdown
+                                        id="operation_type"
+                                        value={payment.operation_type}
+                                        options={[
+                                            { label: 'Credit', value: 'credit' },
+                                            { label: 'Debit', value: 'debit' },
+                                            { label: 'Credit Full', value: 'credit_full' },
+                                            { label: 'Debit Full', value: 'debit_full' }
+                                            
+                                        ]}
+                                        onChange={(e) =>
+                                            setPayment((prev) => ({
+                                                ...prev,
+                                                operation_type: e.value
+                                            }))
+                                        }
+                                        placeholder={t('PAYMENT.FORM.OPRATIONTYPE.PLACEHOLDER')}
+                                        className="w-full"
+                                    />
+                                    {submitted && !payment.operation_type && (
+                                        <small className="p-invalid" style={{ color: 'red' }}>
+                                            {t('REQUIRED')}
+                                        </small>
+                                    )}
+                                </div>
+                                {/* operation type type */}
+
                                 <div className="field">
                                     <label htmlFor="notes" style={{ fontWeight: 'bold' }}>
                                         {t('PAYMENT.FORM.INPUT.NOTES')}
@@ -815,6 +875,8 @@ const PaymentPage = () => {
                                         </small>
                                     )} */}
                                 </div>
+
+
                             </div>
 
                             <div className=" flex-1 col-12 lg:col-6">
@@ -904,7 +966,7 @@ const PaymentPage = () => {
 
                     <Dialog visible={deletePaymentDialog} style={{ width: '450px' }} header={t('TABLE.GENERAL.CONFIRM')} modal footer={deletePaymentDialogFooter} onHide={hideDeletePaymentDialog}>
                         <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            <i className="pi pi-exclamation-triangle mx-3" style={{ fontSize: '2rem', color: 'red' }} />
                             {payment && (
                                 <span>
                                     {t('ARE_YOU_SURE_YOU_WANT_TO_DELETE')} <b></b>
@@ -915,7 +977,7 @@ const PaymentPage = () => {
 
                     <Dialog visible={deletePaymentsDialog} style={{ width: '450px' }} header={t('TABLE.GENERAL.CONFIRM')} modal footer={deleteCompaniesDialogFooter} onHide={hideDeletePaymentsDialog}>
                         <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            <i className="pi pi-exclamation-triangle mx-3" style={{ fontSize: '2rem', color: 'red' }} />
                             {payment && <span>{t('ARE_YOU_SURE_YOU_WANT_TO_DELETE')} the selected companies?</span>}
                         </div>
                     </Dialog>

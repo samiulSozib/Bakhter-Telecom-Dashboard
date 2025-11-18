@@ -15,7 +15,7 @@ import { Dropdown, DropdownChangeEvent } from 'primereact/dropdown';
 import { _fetchCountries } from '@/app/redux/actions/countriesActions';
 import { _fetchTelegramList } from '@/app/redux/actions/telegramActions';
 import { AppDispatch } from '@/app/redux/store';
-import { Country, Currency, District, Province, Reseller } from '@/types/interface';
+import { Country, Currency, District, Province, Reseller, ResellerGroup } from '@/types/interface';
 import { ProgressBar } from 'primereact/progressbar';
 import { _addReseller, _changeResellerStatus, _deleteReseller, _editReseller, _fetchResellers, _getResellerById } from '@/app/redux/actions/resellerActions';
 import { FileUpload } from 'primereact/fileupload';
@@ -171,7 +171,7 @@ const ResellerPage = () => {
 
     const saveReseller = () => {
         setSubmitted(true);
-        console.log(reseller);
+        //console.log(reseller);
         //return;
         if (
             !reseller.reseller_name ||
@@ -183,7 +183,6 @@ const ResellerPage = () => {
             !reseller.province_id ||
             !reseller.districts_id ||
             !reseller.code ||
-            !reseller.reseller_group_id ||
             !reseller.sub_reseller_limit
         ) {
             toast.current?.show({
@@ -229,6 +228,7 @@ const ResellerPage = () => {
             province: matchingProvince,
             province_id: parseInt(reseller.province_id?.toString() || '0'),
             districts_id: parseInt(reseller.districts_id?.toString() || '0'),
+            reseller_group_id: parseInt(reseller.reseller_group_id?.toString() || '0'),
 
             // Boolean fields
             can_set_commission_group: toBoolean(reseller.can_set_commission_group),
@@ -288,133 +288,133 @@ const ResellerPage = () => {
         //console.log(singleReseller)
     }, [dispatch, singleReseller]);
 
-const leftToolbarTemplate = () => {
-    return (
-        <div className="flex flex-col sm:flex-row gap-2 w-full">
-            {/* Search Input - Full width on mobile, auto on desktop */}
-            <div className="flex-grow flex-1">
-                <span className="p-input-icon-left w-full">
-                    <i className="pi pi-search" />
-                    <InputText
-                        type="search"
-                        onInput={(e) => setSearchTag(e.currentTarget.value)}
-                        placeholder={t('ECOMMERCE.COMMON.SEARCH')}
-                        className="w-full"
-                    />
-                </span>
-            </div>
+    const leftToolbarTemplate = () => {
+        return (
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+                {/* Search Input - Full width on mobile, auto on desktop */}
+                <div className="flex-grow flex-1">
+                    <span className="p-input-icon-left w-full">
+                        <i className="pi pi-search" />
+                        <InputText
+                            type="search"
+                            onInput={(e) => setSearchTag(e.currentTarget.value)}
+                            placeholder={t('ECOMMERCE.COMMON.SEARCH')}
+                            className="w-full"
+                        />
+                    </span>
+                </div>
 
-            {/* Export Button - Full width on mobile, auto on desktop */}
-            <Button
-                label={window.innerWidth >= 640 ? t('EXPORT.EXPORT') : t('EXPORT.EXPORT')}
-
-                icon="pi pi-file-excel"
-                severity="success"
-                onClick={exportToExcel}
-                className="flex-1 w-full sm:w-auto"
-            />
-        </div>
-    );
-};
-
-const rightToolbarTemplate = () => {
-    return (
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            {/* Filter Button with Dropdown */}
-            <div className="flex-1 w-full sm:w-auto" ref={filterRef} style={{ position: 'relative' }}>
+                {/* Export Button - Full width on mobile, auto on desktop */}
                 <Button
-                    className="p-button-info w-full sm:w-auto"
-                      label={window.innerWidth >= 640 ? t('FILTER') : t('FILTER')}
+                    label={window.innerWidth >= 640 ? t('EXPORT.EXPORT') : t('EXPORT.EXPORT')}
 
-                    icon="pi pi-filter"
-                    onClick={() => setFilterDialogVisible(!filterDialogVisible)}
+                    icon="pi pi-file-excel"
+                    severity="success"
+                    onClick={exportToExcel}
+                    className="flex-1 w-full sm:w-auto"
                 />
-                {filterDialogVisible && (
-                    <div
-                        className="p-card p-fluid"
-                        style={{
-                            position: 'absolute',
-                            top: '100%',
-                            left: isRTL() ? 'auto' : 0,  // Changed this line
-                            right: isRTL() ? 0 : 'auto', // Changed this line
-                            width: '250px',
-                            zIndex: 1000,
-                            marginTop: '0.5rem',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                        }}
-                    >
-                        <div className="p-card-body" style={{ padding: '1rem' }}>
-                            {/* Filter dialog content remains the same */}
-                            <div className="grid">
-                                <div className="col-12">
-                                    <label htmlFor="statusFilter" style={{ fontSize: '0.875rem' }}>
-                                        {t('PAYMENT.TABLE.COLUMN.STATUS')}
-                                    </label>
-                                    <Dropdown
-                                        id="statusFilter"
-                                        options={[
-                                            { label: t('TABLE.GENERAL.ACTIVATE'), value: '1' },
-                                            { label: t('TABLE.GENERAL.DEACTIVATE'), value: '0' }
-                                        ]}
-                                        value={filters.filter_status}
-                                        onChange={(e) => setFilters({ ...filters, filter_status: e.value })}
-                                        placeholder={t('SELECT_STATUS')}
-                                        style={{ width: '100%' }}
-                                    />
-                                </div>
-                                <div className="col-12">
-                                    <label htmlFor="startDateFilter" style={{ fontSize: '0.875rem' }}>
-                                        {t('START_DATE')}
-                                    </label>
-                                    <InputText type="date" id="startDateFilter" value={filters.filter_startdate || ''} onChange={(e) => setFilters({ ...filters, filter_startdate: e.target.value })} style={{ width: '100%' }} />
-                                </div>
-                                <div className="col-12">
-                                    <label htmlFor="endDateFilter" style={{ fontSize: '0.875rem' }}>
-                                        {t('END_DATE')}
-                                    </label>
-                                    <InputText type="date" id="endDateFilter" value={filters.filter_enddate || ''} onChange={(e) => setFilters({ ...filters, filter_enddate: e.target.value })} style={{ width: '100%' }} />
-                                </div>
-                                <div className="col-12 mt-3 flex justify-content-between gap-2">
-                                    <Button
-                                        label={t('RESET')}
-                                        icon="pi pi-times"
-                                        className="p-button-secondary p-button-sm"
-                                        onClick={() => {
-                                            setFilters({
-                                                filter_status: null,
-                                                filter_startdate: null,
-                                                filter_enddate: null
-                                            });
-                                        }}
-                                    />
-                                    <Button
-                                        label={t('APPLY')}
-                                        icon="pi pi-check"
-                                        className="p-button-sm"
-                                        onClick={() => {
-                                            handleSubmitFilter(filters);
-                                            setFilterDialogVisible(false);
-                                        }}
-                                    />
+            </div>
+        );
+    };
+
+    const rightToolbarTemplate = () => {
+        return (
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                {/* Filter Button with Dropdown */}
+                <div className="flex-1 w-full sm:w-auto" ref={filterRef} style={{ position: 'relative' }}>
+                    <Button
+                        className={`p-button-info w-full sm:w-auto ${isRTL() ? 'rtl-button' : ''}`}
+                        label={window.innerWidth >= 640 ? t('FILTER') : t('FILTER')}
+
+                        icon="pi pi-filter"
+                        onClick={() => setFilterDialogVisible(!filterDialogVisible)}
+                    />
+                    {filterDialogVisible && (
+                        <div
+                            className="p-card p-fluid"
+                            style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: isRTL() ? 'auto' : 0,  // Changed this line
+                                right: isRTL() ? 0 : 'auto', // Changed this line
+                                width: '250px',
+                                zIndex: 1000,
+                                marginTop: '0.5rem',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }}
+                        >
+                            <div className="p-card-body" style={{ padding: '1rem' }}>
+                                {/* Filter dialog content remains the same */}
+                                <div className="grid">
+                                    <div className="col-12">
+                                        <label htmlFor="statusFilter" style={{ fontSize: '0.875rem' }}>
+                                            {t('PAYMENT.TABLE.COLUMN.STATUS')}
+                                        </label>
+                                        <Dropdown
+                                            id="statusFilter"
+                                            options={[
+                                                { label: t('TABLE.GENERAL.ACTIVATE'), value: '1' },
+                                                { label: t('TABLE.GENERAL.DEACTIVATE'), value: '0' }
+                                            ]}
+                                            value={filters.filter_status}
+                                            onChange={(e) => setFilters({ ...filters, filter_status: e.value })}
+                                            placeholder={t('SELECT_STATUS')}
+                                            style={{ width: '100%' }}
+                                        />
+                                    </div>
+                                    <div className="col-12">
+                                        <label htmlFor="startDateFilter" style={{ fontSize: '0.875rem' }}>
+                                            {t('START_DATE')}
+                                        </label>
+                                        <InputText type="date" id="startDateFilter" value={filters.filter_startdate || ''} onChange={(e) => setFilters({ ...filters, filter_startdate: e.target.value })} style={{ width: '100%' }} />
+                                    </div>
+                                    <div className="col-12">
+                                        <label htmlFor="endDateFilter" style={{ fontSize: '0.875rem' }}>
+                                            {t('END_DATE')}
+                                        </label>
+                                        <InputText type="date" id="endDateFilter" value={filters.filter_enddate || ''} onChange={(e) => setFilters({ ...filters, filter_enddate: e.target.value })} style={{ width: '100%' }} />
+                                    </div>
+                                    <div className="col-12 mt-3 flex justify-content-between gap-2">
+                                        <Button
+                                            label={t('RESET')}
+                                            icon="pi pi-times"
+                                            className="p-button-secondary p-button-sm"
+                                            onClick={() => {
+                                                setFilters({
+                                                    filter_status: null,
+                                                    filter_startdate: null,
+                                                    filter_enddate: null
+                                                });
+                                            }}
+                                        />
+                                        <Button
+                                            label={t('APPLY')}
+                                            icon="pi pi-check"
+                                            className="p-button-sm"
+                                            onClick={() => {
+                                                handleSubmitFilter(filters);
+                                                setFilterDialogVisible(false);
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+
+                {/* Create Reseller Button */}
+                <Button
+                    className={`flex-1 w-full sm:w-auto ${isRTL() ? 'rtl-button' : ''}`}
+                    label={window.innerWidth >= 640 ? t('ADD') : t('ADD')}
+
+                    icon="pi pi-plus"
+                    severity="success"
+                    onClick={openNew}
+                />
             </div>
-
-            {/* Create Reseller Button */}
-            <Button
-                className="flex-1 w-full sm:w-auto"
-                  label={window.innerWidth >= 640 ? t('ADD') : t('ADD')}
-
-                icon="pi pi-plus"
-                severity="success"
-                onClick={openNew}
-            />
-        </div>
-    );
-};
+        );
+    };
 
     const nameBodyTemplate = (rowData: Reseller) => {
         return (
@@ -717,6 +717,8 @@ const rightToolbarTemplate = () => {
         }
     }, [reseller?.province_id, districts]);
 
+
+
     const handleSubmitFilter = (filters: any) => {
         const cleanedFilters = Object.fromEntries(Object.entries(filters).filter(([_, value]) => value !== null && value !== ''));
         setActiveFilters(cleanedFilters);
@@ -770,7 +772,7 @@ const rightToolbarTemplate = () => {
                             style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }}
                             field="name"
                             header={t('RESELLER.TABLE.COLUMN.RESELLERNAME')}
-                            sortable
+                            
                             body={nameBodyTemplate}
                         ></Column>
                         <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="phone" header={t('RESELLER.TABLE.COLUMN.PHONE')} body={phoneBodyTemplate}></Column>
@@ -779,6 +781,7 @@ const rightToolbarTemplate = () => {
                             field="total_earning_balance"
                             header={t('TOTAL_EARNING_BALANCE')}
                             body={totalEarningBalanceBodyTemplate}
+                            headerStyle={{ whiteSpace: 'nowrap'}}
                         ></Column>
                         <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="balance" header={t('MENU.BALANCE')} body={balanceBodyTemplate}></Column>
                         <Column
@@ -786,34 +789,39 @@ const rightToolbarTemplate = () => {
                             field="available_payment"
                             header={t('RESELLER.TABLE.COLUMN.AVAILABLEPAYMENT')}
                             body={availablePaymentBodyTemplate}
+                            headerStyle={{ whiteSpace: 'nowrap'}}
                         ></Column>
                         <Column
                             style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }}
                             field="total_payment"
                             header={t('RESELLER.TABLE.COLUMN.PAYMENT')}
                             body={totalPaymentBodyTemplate}
+                            headerStyle={{ whiteSpace: 'nowrap'}}
                         ></Column>
                         <Column
                             style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }}
                             field="total_balance"
                             header={t('RESELLER.TABLE.COLUMN.TOTAL_BALANCE')}
                             body={totalBalanceSentBodyTemplate}
+                            headerStyle={{ whiteSpace: 'nowrap'}}
                         ></Column>
                         <Column
                             style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }}
                             field="loan_amount"
                             header={t('RESELLER.TABLE.COLUMN.LOANAMOUNT')}
                             body={loanAmountBodyTemplate}
+                            headerStyle={{ whiteSpace: 'nowrap'}}
                         ></Column>
                         <Column
                             style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }}
                             field="preferred_currency"
-                            header={t('RESELLER.TABLE.COLUMN.CURRENCYPREFERENCE')}
+                            header={t('MENU.CURRENCY')}
                             body={preferredCurrencyBodyTemplate}
+                            
                         ></Column>
-                        <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="name" header={t('PARENT_RESELLER_NAME')} sortable body={parentNameBodyTemplate}></Column>
+                        <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="name" header={t('PARENT_RESELLER_NAME')}  body={parentNameBodyTemplate} headerStyle={{ whiteSpace: 'nowrap'}}></Column>
                         <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="country" header={t('RESELLER.TABLE.COLUMN.COUNTRY')} body={countryBodyTemplate}></Column>
-                        <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="status" header={t('BUNDLE.TABLE.FILTER.STATUS')} sortable body={statusBodyTemplate}></Column>
+                        <Column style={{ ...customCellStyleImage, textAlign: ['ar', 'fa', 'ps', 'bn'].includes(i18n.language) ? 'right' : 'left' }} field="status" header={t('BUNDLE.TABLE.FILTER.STATUS')}  body={statusBodyTemplate}></Column>
                     </DataTable>
                     <Paginator
                         first={(pagination?.page - 1) * pagination?.items_per_page}
@@ -1114,11 +1122,11 @@ const rightToolbarTemplate = () => {
                                         style={{ fontSize: '0.8rem', height: '40px' }}
                                         className="w-full"
                                     />
-                                    {submitted && !reseller.reseller_group_id && (
+                                    {/* {submitted && !reseller.reseller_group_id && (
                                         <small className="p-invalid" style={{ color: 'red' }}>
                                             {t('THIS_FIELD_IS_REQUIRED')}
                                         </small>
-                                    )}
+                                    )} */}
                                 </div>
                                 <div className="field col-6 md:col-6">
                                     <label style={{ fontWeight: 'bold', fontSize: '0.8rem' }} htmlFor="name">
@@ -1540,7 +1548,7 @@ const rightToolbarTemplate = () => {
 
                     <Dialog visible={deleteResellerDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteResellerDialogFooter} onHide={hideDeleteResellerDialog}>
                         <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            <i className="pi pi-exclamation-triangle mx-3" style={{ fontSize: '2rem', color:'red' }} />
                             {reseller && (
                                 <span>
                                     {t('ARE_YOU_SURE_YOU_WANT_TO_DELETE')} <b>{reseller.reseller_name}</b>
@@ -1551,7 +1559,7 @@ const rightToolbarTemplate = () => {
 
                     <Dialog visible={statusResellerDialog} style={{ width: '450px' }} header="Confirm" modal footer={statusResellerDialogFooter} onHide={hideStatusResellerDialog}>
                         <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            <i className="pi pi-exclamation-triangle mx-3" style={{ fontSize: '2rem', color:'red' }} />
                             {reseller && (
                                 <span>
                                     Are you sure you want to change status <b>{reseller.reseller_name}</b>?
@@ -1562,7 +1570,7 @@ const rightToolbarTemplate = () => {
 
                     <Dialog visible={deleteResellersDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteResellersDialogFooter} onHide={hideDeleteResellersDialog}>
                         <div className="flex align-items-center justify-content-center">
-                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            <i className="pi pi-exclamation-triangle mx-3" style={{ fontSize: '2rem', color:'red' }} />
                             {reseller && <span>{t('ARE_YOU_SURE_YOU_WANT_TO_DELETE')} the selected companies?</span>}
                         </div>
                     </Dialog>

@@ -61,6 +61,11 @@ const AppMenu = () => {
                             label: t('MENU.BUNDLE'),
                             icon: 'pi pi-fw pi-layer-group', // Better bundle icon
                             to: '/pages/bundle'
+                        },
+                        {
+                            label: t('MENU.BUNDLE_PRICING'),
+                            icon: 'pi pi-fw pi-layer-group', // Better bundle icon
+                            to: '/pages/bundle-pricing'
                         }
                     ]
                 },
@@ -169,6 +174,11 @@ const AppMenu = () => {
                             to: '/pages/hawala'
                         },
                         {
+                            label: t('MENU.HAWALA_NUMBER_SERIES'),
+                            icon: 'pi pi-fw pi-transfer', // Better transfer icon
+                            to: '/pages/hawala-number-series'
+                        },
+                        {
                             label: t('MENU.HAWALA.CURRENCY'),
                             icon: 'pi pi-fw pi-bitcoin', // Better hawala currency icon
                             to: '/pages/howala-currencies'
@@ -241,6 +251,11 @@ const AppMenu = () => {
                     label: t('MENU.SETTINGS'),
                     icon: 'pi pi-fw pi-question-circle', // Better help icon
                     to: '/pages/app-settings'
+                },
+                {
+                    label: t('MENU.PROVIDERS'),
+                    icon: 'pi pi-fw pi-question-circle', // Better help icon
+                    to: '/pages/app-providers'
                 },
             ]
         }
